@@ -362,10 +362,10 @@ export function ContentCalendarDashboard({ instagram }: { instagram: InstagramDa
               <div className="max-w-3xl space-y-4">
                 <Badge>Monthly Planning</Badge>
                 <div className="space-y-3">
-                  <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
+                  <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
                     Calendario vivo con Instagram real y planificacion editable
                   </h1>
-                  <p className="text-base text-muted-foreground">
+                  <p className="text-sm text-muted-foreground">
                     Cada dia puede mezclar publicaciones reales ya publicadas en Instagram con ideas y piezas planeadas que agregas desde el calendario.
                   </p>
                 </div>
@@ -425,25 +425,25 @@ export function ContentCalendarDashboard({ instagram }: { instagram: InstagramDa
             <Card>
               <CardHeader>
                 <CardDescription>Visible items</CardDescription>
-                <CardTitle className="text-3xl">{visibleMonthItems.length}</CardTitle>
+                <CardTitle className="text-2xl">{visibleMonthItems.length}</CardTitle>
               </CardHeader>
             </Card>
             <Card>
               <CardHeader>
                 <CardDescription>Scheduled items</CardDescription>
-                <CardTitle className="text-3xl">{scheduledCount}</CardTitle>
+                <CardTitle className="text-2xl">{scheduledCount}</CardTitle>
               </CardHeader>
             </Card>
             <Card>
               <CardHeader>
                 <CardDescription>Published posts</CardDescription>
-                <CardTitle className="text-3xl">{publishedCount}</CardTitle>
+                <CardTitle className="text-2xl">{publishedCount}</CardTitle>
               </CardHeader>
             </Card>
             <Card>
               <CardHeader>
                 <CardDescription>Days with activity</CardDescription>
-                <CardTitle className="text-3xl">{daysWithContent}</CardTitle>
+                <CardTitle className="text-2xl">{daysWithContent}</CardTitle>
               </CardHeader>
             </Card>
           </section>
@@ -806,15 +806,15 @@ export function ContentCalendarDashboard({ instagram }: { instagram: InstagramDa
                             <div className="grid gap-3 md:grid-cols-3">
                               <div className="rounded-2xl border border-border/60 bg-slate-950/50 p-4 text-sm">
                                 <p className="text-xs text-muted-foreground">Likes</p>
-                                <p className="mt-2 text-lg font-semibold text-foreground">{item.likeCount ?? 0}</p>
+                                <p className="mt-2 text-base font-semibold text-foreground">{item.likeCount ?? 0}</p>
                               </div>
                               <div className="rounded-2xl border border-border/60 bg-slate-950/50 p-4 text-sm">
                                 <p className="text-xs text-muted-foreground">Comments</p>
-                                <p className="mt-2 text-lg font-semibold text-foreground">{item.commentsCount ?? 0}</p>
+                                <p className="mt-2 text-base font-semibold text-foreground">{item.commentsCount ?? 0}</p>
                               </div>
                               <div className="rounded-2xl border border-border/60 bg-slate-950/50 p-4 text-sm">
                                 <p className="text-xs text-muted-foreground">Engagement</p>
-                                <p className="mt-2 text-lg font-semibold text-foreground">{item.engagementRate ?? 0}%</p>
+                                <p className="mt-2 text-base font-semibold text-foreground">{item.engagementRate ?? 0}%</p>
                               </div>
                             </div>
                           )}

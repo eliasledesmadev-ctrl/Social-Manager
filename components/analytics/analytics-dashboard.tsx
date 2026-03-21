@@ -459,8 +459,8 @@ export function AnalyticsDashboard({ instagram }: { instagram: InstagramDashboar
               <div className="max-w-3xl space-y-4">
                 <Badge>{text.badge}</Badge>
                 <div className="space-y-3">
-                  <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">{text.title}</h1>
-                  <p className="text-base text-muted-foreground">{text.intro}</p>
+                  <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">{text.title}</h1>
+                  <p className="text-sm text-muted-foreground">{text.intro}</p>
                 </div>
               </div>
 
@@ -512,9 +512,9 @@ export function AnalyticsDashboard({ instagram }: { instagram: InstagramDashboar
                       <CardDescription>{card.label}</CardDescription>
                       <div className="rounded-2xl bg-primary/10 p-2 text-primary"><Icon className="h-4 w-4" /></div>
                     </div>
-                    <CardTitle className="text-3xl">{card.value}</CardTitle>
+                    <CardTitle className="text-2xl">{card.value}</CardTitle>
                   </CardHeader>
-                  <CardContent><p className="text-sm text-muted-foreground">{card.helper}</p></CardContent>
+                  <CardContent><p className="text-xs text-muted-foreground">{card.helper}</p></CardContent>
                 </Card>
               );
             })}
@@ -523,7 +523,7 @@ export function AnalyticsDashboard({ instagram }: { instagram: InstagramDashboar
           <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
             <Card>
               <CardHeader>
-                <div className="flex items-center gap-2 text-primary"><BarChart3 className="h-4 w-4" /><span className="text-sm font-medium">{text.barLabel}</span></div>
+                <div className="flex items-center gap-2 text-primary"><BarChart3 className="h-4 w-4" /><span className="text-xs font-medium tracking-wide">{text.barLabel}</span></div>
                 <CardTitle>{text.barTitle}</CardTitle>
                 <CardDescription>{text.barDescription}</CardDescription>
               </CardHeader>
@@ -557,7 +557,7 @@ export function AnalyticsDashboard({ instagram }: { instagram: InstagramDashboar
 
             <Card>
               <CardHeader>
-                <div className="flex items-center gap-2 text-primary"><LineChart className="h-4 w-4" /><span className="text-sm font-medium">{text.lineLabel}</span></div>
+                <div className="flex items-center gap-2 text-primary"><LineChart className="h-4 w-4" /><span className="text-xs font-medium tracking-wide">{text.lineLabel}</span></div>
                 <CardTitle>{text.lineTitle}</CardTitle>
                 <CardDescription>{text.lineDescription}</CardDescription>
               </CardHeader>
@@ -584,7 +584,7 @@ export function AnalyticsDashboard({ instagram }: { instagram: InstagramDashboar
                     <div className="grid gap-3 md:grid-cols-3">
                       {groupedMetrics.slice(-3).map((item) => (
                         <div key={item.date} className="rounded-2xl border border-border/70 bg-background/50 p-4">
-                          <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{formatMonthDay(item.date, language)}</p>
+                          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">{formatMonthDay(item.date, language)}</p>
                           <p className="mt-2 text-2xl font-semibold text-foreground">{item.engagementRate}%</p>
                           <p className="mt-1 text-sm text-muted-foreground">{item.posts} {text.postDay}</p>
                         </div>
@@ -602,9 +602,9 @@ export function AnalyticsDashboard({ instagram }: { instagram: InstagramDashboar
             <Card>
               <CardHeader><CardTitle>{text.connectedSource}</CardTitle><CardDescription>{text.sourceDescription}</CardDescription></CardHeader>
               <CardContent className="space-y-4 text-sm text-muted-foreground">
-                <div className="rounded-2xl border border-border/70 bg-background/50 p-4"><p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{text.account}</p><p className="mt-2 text-lg font-semibold text-foreground">{selectedView.profile?.name ?? selectedView.label}</p><p>{selectedView.profile ? `@${selectedView.profile.username}` : selectedView.error}</p></div>
-                <div className="rounded-2xl border border-border/70 bg-background/50 p-4"><p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{text.dateRange}</p><p className="mt-2 text-foreground">{activeRangeLabel}</p></div>
-                <div className="rounded-2xl border border-border/70 bg-background/50 p-4"><p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{text.apiHistory}</p><p className="mt-2">{selectedView.allMedia.length} {text.openRangeLabel}</p></div>
+                <div className="rounded-2xl border border-border/70 bg-background/50 p-4"><p className="text-[10px] uppercase tracking-widest text-muted-foreground">{text.account}</p><p className="mt-2 text-base font-semibold text-foreground">{selectedView.profile?.name ?? selectedView.label}</p><p>{selectedView.profile ? `@${selectedView.profile.username}` : selectedView.error}</p></div>
+                <div className="rounded-2xl border border-border/70 bg-background/50 p-4"><p className="text-[10px] uppercase tracking-widest text-muted-foreground">{text.dateRange}</p><p className="mt-2 text-foreground">{activeRangeLabel}</p></div>
+                <div className="rounded-2xl border border-border/70 bg-background/50 p-4"><p className="text-[10px] uppercase tracking-widest text-muted-foreground">{text.apiHistory}</p><p className="mt-2">{selectedView.allMedia.length} {text.openRangeLabel}</p></div>
                 <Button variant="outline" className="w-full">{text.updatedSnapshot}</Button>
               </CardContent>
             </Card>
@@ -622,13 +622,13 @@ export function AnalyticsDashboard({ instagram }: { instagram: InstagramDashboar
                             <span className="rounded-full bg-slate-200/10 px-2.5 py-1 text-xs font-medium text-slate-200">{post.mediaType}</span>
                             <span className="rounded-full border border-border/70 bg-slate-950/60 px-2.5 py-1 text-xs text-muted-foreground">{text.sourceTag}: {post.accountLabel}</span>
                           </div>
-                          <h3 className="text-base font-semibold text-foreground">{post.caption.slice(0, 90) || "Instagram post"}</h3>
+                          <h3 className="text-sm font-semibold text-foreground">{post.caption.slice(0, 90) || "Instagram post"}</h3>
                           <p className="text-sm text-muted-foreground">{text.postedOn} {formatMonthDay(post.timestamp, language)}</p>
                         </div>
                         <div className="grid min-w-56 grid-cols-3 gap-3">
-                          <div className="rounded-2xl border border-border/60 bg-slate-950/50 p-3"><p className="text-xs text-muted-foreground">{text.likes}</p><p className="mt-1 text-lg font-semibold text-foreground">{formatCompactNumber(post.likeCount)}</p></div>
-                          <div className="rounded-2xl border border-border/60 bg-slate-950/50 p-3"><p className="text-xs text-muted-foreground">{text.comments}</p><p className="mt-1 text-lg font-semibold text-foreground">{formatCompactNumber(post.commentsCount)}</p></div>
-                          <div className="rounded-2xl border border-border/60 bg-slate-950/50 p-3"><p className="text-xs text-muted-foreground">{text.engagement}</p><p className="mt-1 text-lg font-semibold text-foreground">{post.engagementRate}%</p></div>
+                          <div className="rounded-2xl border border-border/60 bg-slate-950/50 p-3"><p className="text-xs text-muted-foreground">{text.likes}</p><p className="mt-1 text-base font-semibold text-foreground">{formatCompactNumber(post.likeCount)}</p></div>
+                          <div className="rounded-2xl border border-border/60 bg-slate-950/50 p-3"><p className="text-xs text-muted-foreground">{text.comments}</p><p className="mt-1 text-base font-semibold text-foreground">{formatCompactNumber(post.commentsCount)}</p></div>
+                          <div className="rounded-2xl border border-border/60 bg-slate-950/50 p-3"><p className="text-xs text-muted-foreground">{text.engagement}</p><p className="mt-1 text-base font-semibold text-foreground">{post.engagementRate}%</p></div>
                         </div>
                       </div>
                     </article>

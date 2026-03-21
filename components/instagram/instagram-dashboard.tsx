@@ -256,7 +256,7 @@ function PublishedPostCard({ post, language, sourceLabel }: { post: InstagramMed
               {text.sourceTag}: {sourceLabel}
             </span>
           </div>
-          <h3 className="text-base font-semibold text-foreground">
+          <h3 className="text-sm font-semibold text-foreground">
             {truncate(post.caption || "Instagram post", 92)}
           </h3>
         </div>
@@ -424,8 +424,8 @@ export function InstagramDashboard({ instagram }: { instagram: InstagramDashboar
               <div className="max-w-3xl space-y-4">
                 <Badge>{text.badge}</Badge>
                 <div className="space-y-3">
-                  <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{text.title}</h1>
-                  <p className="text-base text-muted-foreground">{text.intro}</p>
+                  <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{text.title}</h1>
+                  <p className="text-sm text-muted-foreground">{text.intro}</p>
                 </div>
               </div>
 
@@ -450,7 +450,7 @@ export function InstagramDashboard({ instagram }: { instagram: InstagramDashboar
                       <span className="font-medium">{text.connected}</span>
                     </div>
                     <div>
-                      <p className="text-lg font-semibold text-foreground">{selectedView.profile.name}</p>
+                      <p className="text-base font-semibold text-foreground">{selectedView.profile.name}</p>
                       <p>{accountScope === "all" ? text.allAccountsSummary : `@${selectedView.profile.username}`}</p>
                     </div>
                     <p suppressHydrationWarning>{text.sync}: {formatSyncDate(selectedView.lastSync, language)}</p>
@@ -481,9 +481,9 @@ export function InstagramDashboard({ instagram }: { instagram: InstagramDashboar
                       <CardDescription>{metric.label}</CardDescription>
                       <div className="rounded-2xl bg-primary/10 p-2 text-primary"><Icon className="h-4 w-4" /></div>
                     </div>
-                    <CardTitle className="text-3xl">{metric.value}</CardTitle>
+                    <CardTitle className="text-2xl">{metric.value}</CardTitle>
                   </CardHeader>
-                  <CardContent><p className="text-sm text-muted-foreground">{metric.helper}</p></CardContent>
+                  <CardContent><p className="text-xs text-muted-foreground">{metric.helper}</p></CardContent>
                 </Card>
               );
             })}
@@ -492,7 +492,7 @@ export function InstagramDashboard({ instagram }: { instagram: InstagramDashboar
           <section className="grid gap-6 xl:grid-cols-[0.76fr_1.24fr]">
             <Card className="h-fit">
               <CardHeader>
-                <div className="flex items-center gap-2 text-primary"><Plus className="h-4 w-4" /><span className="text-sm font-medium">{text.pipeline}</span></div>
+                <div className="flex items-center gap-2 text-primary"><Plus className="h-4 w-4" /><span className="text-xs font-medium tracking-wide">{text.pipeline}</span></div>
                 <CardTitle>{text.addIdea}</CardTitle>
                 <CardDescription>{text.formDescription}</CardDescription>
               </CardHeader>
@@ -538,7 +538,7 @@ export function InstagramDashboard({ instagram }: { instagram: InstagramDashboar
                 return (
                   <Card key={status}>
                     <CardHeader>
-                      <div className={cn("flex items-center gap-2", statusMeta[status].accent)}><Icon className="h-4 w-4" /><span className="text-sm font-medium">{status}</span></div>
+                      <div className={cn("flex items-center gap-2", statusMeta[status].accent)}><Icon className="h-4 w-4" /><span className="text-xs font-medium tracking-wide">{status}</span></div>
                       <CardTitle>{status}</CardTitle>
                       <CardDescription>{statusMeta[status].description[language]}</CardDescription>
                     </CardHeader>
@@ -546,7 +546,7 @@ export function InstagramDashboard({ instagram }: { instagram: InstagramDashboar
                       {items.length > 0 ? items.map((item) => (
                         <article key={item.id} className="rounded-2xl border border-border/70 bg-background/60 p-4">
                           <div className="space-y-2">
-                            <h3 className="text-base font-semibold text-foreground">{item.title}</h3>
+                            <h3 className="text-sm font-semibold text-foreground">{item.title}</h3>
                             <div className="flex flex-wrap gap-2">
                               <span className={cn("rounded-full px-2.5 py-1 text-xs font-medium", typePillStyles[item.type])}>{item.type}</span>
                               <span className="rounded-full border border-border/70 bg-slate-950/70 px-2.5 py-1 text-xs text-muted-foreground">{item.scheduledDate} {item.time}</span>
@@ -565,7 +565,7 @@ export function InstagramDashboard({ instagram }: { instagram: InstagramDashboar
           <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
             <Card>
               <CardHeader>
-                <div className="flex items-center gap-2 text-primary"><CheckCircle2 className="h-4 w-4" /><span className="text-sm font-medium">{selectedView.label}</span></div>
+                <div className="flex items-center gap-2 text-primary"><CheckCircle2 className="h-4 w-4" /><span className="text-xs font-medium tracking-wide">{selectedView.label}</span></div>
                 <CardTitle>{text.latestSection}</CardTitle>
                 <CardDescription>{text.latestDescription}</CardDescription>
               </CardHeader>
@@ -582,7 +582,7 @@ export function InstagramDashboard({ instagram }: { instagram: InstagramDashboar
                     <>
                       <div className="rounded-2xl border border-border/70 bg-background/50 p-4">
                         <div className="flex flex-wrap gap-2">
-                          <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Caption</p>
+                          <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Caption</p>
                           <span className="rounded-full border border-border/70 bg-slate-950/70 px-2.5 py-1 text-[11px] text-muted-foreground">{text.sourceTag}: {selectedView.topPerformer.accountLabel}</span>
                         </div>
                         <p className="mt-2 text-foreground">{truncate(selectedView.topPerformer.caption, 180)}</p>

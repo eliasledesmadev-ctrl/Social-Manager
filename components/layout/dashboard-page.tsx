@@ -39,10 +39,10 @@ export function DashboardPage({
               <div className="max-w-2xl space-y-4">
                 <Badge>{badge}</Badge>
                 <div className="space-y-3">
-                  <h2 className="text-4xl font-semibold tracking-tight text-foreground">
+                  <h2 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
                     {title}
                   </h2>
-                  <p className="text-base text-muted-foreground">{description}</p>
+                  <p className="text-sm text-muted-foreground">{description}</p>
                 </div>
               </div>
 
@@ -61,7 +61,7 @@ export function DashboardPage({
               <Card key={metric.label}>
                 <CardHeader>
                   <CardDescription>{metric.label}</CardDescription>
-                  <CardTitle className="text-3xl">{metric.value}</CardTitle>
+                  <CardTitle className="text-2xl">{metric.value}</CardTitle>
                 </CardHeader>
               </Card>
             ))}
