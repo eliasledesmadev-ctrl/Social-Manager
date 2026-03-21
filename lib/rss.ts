@@ -1,4 +1,5 @@
-export type NewsTopic = "tools" | "research" | "business";
+/** Tema de un artículo o fuente — cadena libre para soportar temas personalizados por el usuario. */
+export type NewsTopic = string;
 
 export type NewsItem = {
   id: string;
@@ -10,37 +11,59 @@ export type NewsItem = {
   topic: NewsTopic;
 };
 
-type FeedSource = {
+export type FeedSource = {
   name: string;
   url: string;
   topic: NewsTopic;
 };
 
-const feedSources: FeedSource[] = [
+/**
+ * Define un tema visible en el dashboard.
+ * `id`    — clave usada en feeds y artículos.
+ * `label` — nombre mostrado al usuario.
+ * `color` — índice en la paleta de colores del componente.
+ */
+export type TopicDefinition = {
+  id: string;
+  label: string;
+  color: number;
+};
+
+/** Temas por defecto orientados al nicho de motos de TuCuervo. */
+export const defaultTopics: TopicDefinition[] = [
+  { id: "noticias",   label: "Noticias",   color: 0 },
+  { id: "eventos",    label: "Eventos",    color: 3 },
+  { id: "tendencias", label: "Tendencias", color: 1 },
+  { id: "tecnica",    label: "Tecnica",    color: 4 },
+  { id: "comunidad",  label: "Comunidad",  color: 2 },
+];
+
+/** Fuentes RSS predeterminadas orientadas a motos. */
+export const builtinFeedSources: FeedSource[] = [
   {
-    name: "Google AI Blog",
-    url: "https://blog.google/technology/ai/rss/",
-    topic: "research",
+    name: "RevZilla Common Tread",
+    url: "https://www.revzilla.com/common-tread/feed",
+    topic: "tecnica",
   },
   {
-    name: "TechCrunch AI",
-    url: "https://techcrunch.com/category/artificial-intelligence/feed/",
-    topic: "business",
+    name: "Cycle World",
+    url: "https://www.cycleworld.com/rss/all.xml/",
+    topic: "noticias",
   },
   {
-    name: "VentureBeat AI",
-    url: "https://venturebeat.com/category/ai/feed/",
-    topic: "business",
+    name: "RideApart",
+    url: "https://rideapart.com/rss/",
+    topic: "noticias",
   },
   {
-    name: "MarkTechPost",
-    url: "https://www.marktechpost.com/feed/",
-    topic: "research",
+    name: "BikeExif",
+    url: "https://www.bikeexif.com/feed",
+    topic: "comunidad",
   },
   {
-    name: "OpenAI News",
-    url: "https://openai.com/news/rss.xml",
-    topic: "tools",
+    name: "ADV Pulse",
+    url: "https://www.advpulse.com/feed/",
+    topic: "eventos",
   },
 ];
 
@@ -83,7 +106,7 @@ function normalizeDate(value?: string) {
   return Number.isNaN(parsed.getTime()) ? new Date().toISOString() : parsed.toISOString();
 }
 
-function parseFeedXml(xml: string, source: FeedSource): NewsItem[] {
+export function parseFeedXml(xml: string, source: FeedSource): NewsItem[] {
   const itemBlocks = [
     ...(xml.match(/<item[\s\S]*?<\/item>/gi) || []),
     ...(xml.match(/<entry[\s\S]*?<\/entry>/gi) || []),
@@ -101,7 +124,7 @@ function parseFeedXml(xml: string, source: FeedSource): NewsItem[] {
         extractTag(block, "pubDate") ||
         extractTag(block, "published") ||
         extractTag(block, "updated");
-      const link = extractLink(block) || source.url;
+      const link = validateHttpsUrl(extractLink(block)) || source.url;
 
       if (!headline) {
         return null;
@@ -120,10 +143,27 @@ function parseFeedXml(xml: string, source: FeedSource): NewsItem[] {
     .filter((item): item is NewsItem => Boolean(item));
 }
 
+const rssFetchTimeoutMs = 8_000; // 8 segundos por feed
+const rssMaxBytes = 2 * 1024 * 1024; // 2 MB máximo por feed
+
+/** Valida que una URL sea https:// para evitar javascript: y otros esquemas peligrosos. */
+export function validateHttpsUrl(value: string): string {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" ? value : "";
+  } catch {
+    return "";
+  }
+}
+
 async function fetchFeed(source: FeedSource) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), rssFetchTimeoutMs);
+
   try {
     const response = await fetch(source.url, {
       next: { revalidate: 1800 },
+      signal: controller.signal,
       headers: {
         "User-Agent": "ContentDashboardBot/1.0",
         Accept: "application/rss+xml, application/xml, text/xml;q=0.9, */*;q=0.8",
@@ -134,15 +174,27 @@ async function fetchFeed(source: FeedSource) {
       return [];
     }
 
+    // Limitar tamaño de respuesta para evitar feeds maliciosos enormes
+    const contentLength = Number(response.headers.get("content-length") ?? 0);
+    if (contentLength > rssMaxBytes) {
+      return [];
+    }
+
     const xml = await response.text();
+    if (xml.length > rssMaxBytes) {
+      return [];
+    }
+
     return parseFeedXml(xml, source);
   } catch {
     return [];
+  } finally {
+    clearTimeout(timer);
   }
 }
 
 export async function getNewsItems() {
-  const settled = await Promise.all(feedSources.map((source) => fetchFeed(source)));
+  const settled = await Promise.all(builtinFeedSources.map((source) => fetchFeed(source)));
   const items = settled.flat().sort((a, b) => {
     return new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime();
   });
