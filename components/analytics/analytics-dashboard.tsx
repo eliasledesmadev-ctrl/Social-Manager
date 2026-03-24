@@ -9,6 +9,8 @@ import {
   LineChart,
   TrendingUp,
   Users,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react";
 
 import { AccountScopeSelector } from "@/components/instagram/account-scope-selector";
@@ -169,6 +171,26 @@ function formatMonthDay(value: string, language: "en" | "es") {
   }).format(new Date(value));
 }
 
+function formatTime(value: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Lima",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }).format(new Date(value));
+}
+
+type ChartTooltip = {
+  x: number;
+  y: number;
+  date: string;
+  time?: string;
+  interactions: number;
+  likes?: number;
+  comments?: number;
+  posts?: number;
+} | null;
+
 function buildLinePath(values: number[], width: number, height: number) {
   if (values.length === 0) return "";
 
@@ -230,6 +252,9 @@ export function AnalyticsDashboard({ instagram }: { instagram: InstagramDashboar
   const [startDate, setStartDate] = useState("2021-01-01");
   const [endDate, setEndDate] = useState(new Date().toISOString().slice(0, 10));
   const [accountScope, setAccountScope] = useState<InstagramAccountScope>("all");
+  const [barChartScale, setBarChartScale] = useState(1);
+  const [lineChartScale, setLineChartScale] = useState(1);
+  const [tooltip, setTooltip] = useState<ChartTooltip>(null);
 
   const range = useMemo(() => normalizeRange(startDate, endDate), [startDate, endDate]);
   const selectedAccount = useMemo(
@@ -523,13 +548,20 @@ export function AnalyticsDashboard({ instagram }: { instagram: InstagramDashboar
           <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
             <Card>
               <CardHeader>
-                <div className="flex items-center gap-2 text-primary"><BarChart3 className="h-4 w-4" /><span className="text-xs font-medium tracking-wide">{text.barLabel}</span></div>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 text-primary"><BarChart3 className="h-4 w-4" /><span className="text-xs font-medium tracking-wide">{text.barLabel}</span></div>
+                  <div className="flex items-center gap-1 rounded-2xl border border-border/60 bg-background/40 p-1">
+                    <button type="button" onClick={() => setBarChartScale((s) => Math.max(0.5, +(s - 0.25).toFixed(2)))} className="flex h-7 w-7 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground" aria-label="Zoom out bar chart"><ZoomOut className="h-3.5 w-3.5" /></button>
+                    <span className="min-w-[2.5rem] text-center text-[11px] font-medium tabular-nums text-muted-foreground">{Math.round(barChartScale * 100)}%</span>
+                    <button type="button" onClick={() => setBarChartScale((s) => Math.min(2.5, +(s + 0.25).toFixed(2)))} className="flex h-7 w-7 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground" aria-label="Zoom in bar chart"><ZoomIn className="h-3.5 w-3.5" /></button>
+                  </div>
+                </div>
                 <CardTitle>{text.barTitle}</CardTitle>
                 <CardDescription>{text.barDescription}</CardDescription>
               </CardHeader>
               <CardContent>
                 {groupedMetrics.length > 0 ? (
-                  <div className="grid min-h-[320px] grid-cols-[auto_1fr] gap-4">
+                  <div className="grid grid-cols-[auto_1fr] gap-4" style={{ minHeight: Math.round(320 * barChartScale) }}>
                     <div className="flex flex-col justify-between py-2 text-xs text-muted-foreground">
                       <span>{formatCompactNumber(maxInteractions)}</span>
                       <span>{formatCompactNumber(maxInteractions / 2)}</span>
@@ -537,9 +569,15 @@ export function AnalyticsDashboard({ instagram }: { instagram: InstagramDashboar
                     </div>
                     <div className="flex h-full items-end gap-3 overflow-x-auto rounded-3xl border border-border/70 bg-background/50 p-5">
                       {groupedMetrics.map((item) => (
-                        <div key={item.date} className="flex min-w-14 flex-1 flex-col items-center gap-3">
-                          <div className="flex h-64 w-full items-end">
-                            <div className="w-full rounded-t-2xl bg-gradient-to-t from-primary to-cyan-300 shadow-[0_10px_35px_rgba(34,211,238,0.25)]" style={{ height: `${Math.max((item.interactions / maxInteractions) * 100, 8)}%` }} />
+                        <div
+                          key={item.date}
+                          className="flex min-w-14 flex-1 flex-col items-center gap-3 cursor-default"
+                          onMouseEnter={(e) => setTooltip({ x: e.clientX, y: e.clientY, date: item.date, interactions: item.interactions, posts: item.posts })}
+                          onMouseMove={(e) => setTooltip((t) => t ? { ...t, x: e.clientX, y: e.clientY } : t)}
+                          onMouseLeave={() => setTooltip(null)}
+                        >
+                          <div className="flex w-full items-end" style={{ height: Math.round(256 * barChartScale) }}>
+                            <div className="w-full rounded-t-2xl bg-gradient-to-t from-primary to-cyan-300 shadow-[0_10px_35px_rgba(34,211,238,0.25)] transition-all hover:brightness-125" style={{ height: `${Math.max((item.interactions / maxInteractions) * 100, 8)}%` }} />
                           </div>
                           <div className="space-y-1 text-center">
                             <p className="text-xs font-medium text-foreground">{formatCompactNumber(item.interactions)}</p>
@@ -557,7 +595,14 @@ export function AnalyticsDashboard({ instagram }: { instagram: InstagramDashboar
 
             <Card>
               <CardHeader>
-                <div className="flex items-center gap-2 text-primary"><LineChart className="h-4 w-4" /><span className="text-xs font-medium tracking-wide">{text.lineLabel}</span></div>
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 text-primary"><LineChart className="h-4 w-4" /><span className="text-xs font-medium tracking-wide">{text.lineLabel}</span></div>
+                  <div className="flex items-center gap-1 rounded-2xl border border-border/60 bg-background/40 p-1">
+                    <button type="button" onClick={() => setLineChartScale((s) => Math.max(0.5, +(s - 0.25).toFixed(2)))} className="flex h-7 w-7 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground" aria-label="Zoom out line chart"><ZoomOut className="h-3.5 w-3.5" /></button>
+                    <span className="min-w-[2.5rem] text-center text-[11px] font-medium tabular-nums text-muted-foreground">{Math.round(lineChartScale * 100)}%</span>
+                    <button type="button" onClick={() => setLineChartScale((s) => Math.min(2.5, +(s + 0.25).toFixed(2)))} className="flex h-7 w-7 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground" aria-label="Zoom in line chart"><ZoomIn className="h-3.5 w-3.5" /></button>
+                  </div>
+                </div>
                 <CardTitle>{text.lineTitle}</CardTitle>
                 <CardDescription>{text.lineDescription}</CardDescription>
               </CardHeader>
@@ -565,7 +610,7 @@ export function AnalyticsDashboard({ instagram }: { instagram: InstagramDashboar
                 {groupedMetrics.length > 0 ? (
                   <>
                     <div className="rounded-3xl border border-border/70 bg-background/50 p-4">
-                      <svg viewBox="0 0 100 100" className="h-72 w-full overflow-visible">
+                      <svg viewBox="0 0 100 100" className="w-full overflow-visible" style={{ height: Math.round(288 * lineChartScale) }}>
                         <defs><linearGradient id="engagementLine" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="rgb(34 211 238)" /><stop offset="100%" stopColor="rgb(59 130 246)" /></linearGradient></defs>
                         <path d="M0,100 L100,100" stroke="rgba(148,163,184,0.2)" strokeWidth="0.8" />
                         <path d="M0,66 L100,66" stroke="rgba(148,163,184,0.15)" strokeWidth="0.8" />
@@ -577,7 +622,20 @@ export function AnalyticsDashboard({ instagram }: { instagram: InstagramDashboar
                           const rangeValue = max - min || 1;
                           const x = (index / Math.max(engagementValues.length - 1, 1)) * 100;
                           const y = 100 - ((value - min) / rangeValue) * 100;
-                          return <circle key={`${value}-${index}`} cx={x} cy={y} r="2.2" fill="rgb(34 211 238)" stroke="rgb(15 23 42)" strokeWidth="1" />;
+                          const item = groupedMetrics[index];
+                          return (
+                            <circle
+                              key={`${value}-${index}`}
+                              cx={x} cy={y} r="3.5"
+                              fill="rgb(34 211 238)" stroke="rgb(15 23 42)" strokeWidth="1"
+                              className="cursor-default"
+                              onMouseEnter={(e) => {
+                                const rect = (e.target as SVGCircleElement).ownerSVGElement?.getBoundingClientRect();
+                                setTooltip({ x: e.clientX, y: e.clientY, date: item.date, interactions: item.interactions, posts: item.posts });
+                              }}
+                              onMouseLeave={() => setTooltip(null)}
+                            />
+                          );
                         })}
                       </svg>
                     </div>
@@ -614,7 +672,13 @@ export function AnalyticsDashboard({ instagram }: { instagram: InstagramDashboar
               <CardContent className="space-y-3">
                 {topPosts.length > 0 ? (
                   topPosts.map((post, index) => (
-                    <article key={post.id} className="rounded-2xl border border-border/70 bg-background/50 p-4">
+                    <article
+                      key={post.id}
+                      className="rounded-2xl border border-border/70 bg-background/50 p-4 cursor-default"
+                      onMouseEnter={(e) => setTooltip({ x: e.clientX, y: e.clientY, date: post.timestamp, time: post.timestamp, interactions: post.engagementCount, likes: post.likeCount, comments: post.commentsCount })}
+                      onMouseMove={(e) => setTooltip((t) => t ? { ...t, x: e.clientX, y: e.clientY } : t)}
+                      onMouseLeave={() => setTooltip(null)}
+                    >
                       <div className="flex flex-wrap items-start justify-between gap-4">
                         <div className="space-y-2">
                           <div className="flex items-center gap-2 flex-wrap">
@@ -641,6 +705,49 @@ export function AnalyticsDashboard({ instagram }: { instagram: InstagramDashboar
           </section>
         </div>
       </main>
+
+      {tooltip && (
+        <div
+          className="pointer-events-none fixed z-50 -translate-x-1/2 -translate-y-full"
+          style={{ left: tooltip.x, top: tooltip.y - 12 }}
+        >
+          <div className="rounded-2xl border border-border/80 bg-slate-900/95 px-4 py-3 shadow-[0_16px_48px_rgba(2,6,23,0.65)] backdrop-blur-md">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">
+              {formatMonthDay(tooltip.date, language)}
+              {tooltip.time && <> · {formatTime(tooltip.time)}</>}
+            </p>
+            {tooltip.likes !== undefined ? (
+              <div className="mt-2 flex items-center gap-4">
+                <div>
+                  <p className="text-[10px] text-muted-foreground">{text.likes}</p>
+                  <p className="text-sm font-semibold text-foreground">{formatFullNumber(tooltip.likes)}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-muted-foreground">{text.comments}</p>
+                  <p className="text-sm font-semibold text-foreground">{formatFullNumber(tooltip.comments ?? 0)}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-muted-foreground">{text.totalInteractions}</p>
+                  <p className="text-sm font-semibold text-primary">{formatFullNumber(tooltip.interactions)}</p>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-2 flex items-center gap-4">
+                <div>
+                  <p className="text-[10px] text-muted-foreground">{text.totalInteractions}</p>
+                  <p className="text-sm font-semibold text-primary">{formatFullNumber(tooltip.interactions)}</p>
+                </div>
+                {tooltip.posts !== undefined && (
+                  <div>
+                    <p className="text-[10px] text-muted-foreground">{text.postsInRange}</p>
+                    <p className="text-sm font-semibold text-foreground">{tooltip.posts}</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
