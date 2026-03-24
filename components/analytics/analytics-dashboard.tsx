@@ -291,7 +291,8 @@ export function AnalyticsDashboard({ instagram }: { instagram: InstagramDashboar
   const interactions = groupedMetrics.map((item) => item.interactions);
   const engagementValues = groupedMetrics.map((item) => item.engagementRate);
   const maxInteractions = Math.max(...interactions, 1);
-  const linePath = buildLinePath(engagementValues, 100, 100);
+  const lineVW = Math.round(100 * lineChartScale);
+  const linePath = buildLinePath(engagementValues, lineVW, 100);
 
   const totals = useMemo(() => {
     const totalInteractions = filteredPosts.reduce((sum, post) => sum + post.engagementCount, 0);
@@ -561,7 +562,7 @@ export function AnalyticsDashboard({ instagram }: { instagram: InstagramDashboar
               </CardHeader>
               <CardContent>
                 {groupedMetrics.length > 0 ? (
-                  <div className="grid grid-cols-[auto_1fr] gap-4" style={{ minHeight: Math.round(320 * barChartScale) }}>
+                  <div className="grid min-h-[320px] grid-cols-[auto_1fr] gap-4">
                     <div className="flex flex-col justify-between py-2 text-xs text-muted-foreground">
                       <span>{formatCompactNumber(maxInteractions)}</span>
                       <span>{formatCompactNumber(maxInteractions / 2)}</span>
@@ -571,17 +572,18 @@ export function AnalyticsDashboard({ instagram }: { instagram: InstagramDashboar
                       {groupedMetrics.map((item) => (
                         <div
                           key={item.date}
-                          className="flex min-w-14 flex-1 flex-col items-center gap-3 cursor-default"
+                          className="flex shrink-0 flex-col items-center gap-3 cursor-default"
+                          style={{ width: Math.round(56 * barChartScale) }}
                           onMouseEnter={(e) => setTooltip({ x: e.clientX, y: e.clientY, date: item.date, interactions: item.interactions, posts: item.posts })}
                           onMouseMove={(e) => setTooltip((t) => t ? { ...t, x: e.clientX, y: e.clientY } : t)}
                           onMouseLeave={() => setTooltip(null)}
                         >
-                          <div className="flex w-full items-end" style={{ height: Math.round(256 * barChartScale) }}>
+                          <div className="flex h-64 w-full items-end">
                             <div className="w-full rounded-t-2xl bg-gradient-to-t from-primary to-cyan-300 shadow-[0_10px_35px_rgba(34,211,238,0.25)] transition-all hover:brightness-125" style={{ height: `${Math.max((item.interactions / maxInteractions) * 100, 8)}%` }} />
                           </div>
-                          <div className="space-y-1 text-center">
-                            <p className="text-xs font-medium text-foreground">{formatCompactNumber(item.interactions)}</p>
-                            <p className="text-[11px] text-muted-foreground">{formatMonthDay(item.date, language)}</p>
+                          <div className="space-y-1 text-center w-full overflow-hidden">
+                            <p className="text-xs font-medium text-foreground truncate">{formatCompactNumber(item.interactions)}</p>
+                            <p className="text-[11px] text-muted-foreground truncate">{formatMonthDay(item.date, language)}</p>
                           </div>
                         </div>
                       ))}
@@ -609,30 +611,38 @@ export function AnalyticsDashboard({ instagram }: { instagram: InstagramDashboar
               <CardContent className="space-y-4">
                 {groupedMetrics.length > 0 ? (
                   <>
-                    <div className="rounded-3xl border border-border/70 bg-background/50 p-4">
-                      <svg viewBox="0 0 100 100" className="w-full overflow-visible" style={{ height: Math.round(288 * lineChartScale) }}>
-                        <defs><linearGradient id="engagementLine" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="rgb(34 211 238)" /><stop offset="100%" stopColor="rgb(59 130 246)" /></linearGradient></defs>
-                        <path d="M0,100 L100,100" stroke="rgba(148,163,184,0.2)" strokeWidth="0.8" />
-                        <path d="M0,66 L100,66" stroke="rgba(148,163,184,0.15)" strokeWidth="0.8" />
-                        <path d="M0,33 L100,33" stroke="rgba(148,163,184,0.15)" strokeWidth="0.8" />
-                        <path d={linePath} fill="none" stroke="url(#engagementLine)" strokeWidth="2.5" strokeLinecap="round" />
+                    <div className="overflow-x-auto rounded-3xl border border-border/70 bg-background/50 p-4">
+                      <svg
+                        viewBox={`0 0 ${lineVW} 100`}
+                        preserveAspectRatio="none"
+                        className="overflow-visible"
+                        style={{ width: `${Math.max(100, lineVW)}%`, minWidth: "100%", height: "18rem" }}
+                      >
+                        <defs>
+                          <linearGradient id="engagementLine" x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0%" stopColor="rgb(34 211 238)" />
+                            <stop offset="100%" stopColor="rgb(59 130 246)" />
+                          </linearGradient>
+                        </defs>
+                        <path d={`M0,100 L${lineVW},100`} stroke="rgba(148,163,184,0.2)" strokeWidth="0.8" />
+                        <path d={`M0,66 L${lineVW},66`} stroke="rgba(148,163,184,0.15)" strokeWidth="0.8" />
+                        <path d={`M0,33 L${lineVW},33`} stroke="rgba(148,163,184,0.15)" strokeWidth="0.8" />
+                        <path d={linePath} fill="none" stroke="url(#engagementLine)" strokeWidth="2.5" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
                         {engagementValues.map((value, index) => {
                           const max = Math.max(...engagementValues, 1);
                           const min = Math.min(...engagementValues, 0);
                           const rangeValue = max - min || 1;
-                          const x = (index / Math.max(engagementValues.length - 1, 1)) * 100;
+                          const x = (index / Math.max(engagementValues.length - 1, 1)) * lineVW;
                           const y = 100 - ((value - min) / rangeValue) * 100;
                           const item = groupedMetrics[index];
                           return (
                             <circle
                               key={`${value}-${index}`}
-                              cx={x} cy={y} r="3.5"
-                              fill="rgb(34 211 238)" stroke="rgb(15 23 42)" strokeWidth="1"
+                              cx={x} cy={y} r="2.2"
+                              fill="rgb(34 211 238)" stroke="rgb(15 23 42)" strokeWidth="0.8"
+                              vectorEffect="non-scaling-stroke"
                               className="cursor-default"
-                              onMouseEnter={(e) => {
-                                const rect = (e.target as SVGCircleElement).ownerSVGElement?.getBoundingClientRect();
-                                setTooltip({ x: e.clientX, y: e.clientY, date: item.date, interactions: item.interactions, posts: item.posts });
-                              }}
+                              onMouseEnter={(e) => setTooltip({ x: e.clientX, y: e.clientY, date: item.date, interactions: item.interactions, posts: item.posts })}
                               onMouseLeave={() => setTooltip(null)}
                             />
                           );
