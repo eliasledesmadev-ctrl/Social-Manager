@@ -92,6 +92,28 @@ const graphBaseUrl = "https://graph.facebook.com/v25.0";
 const mediaFields =
   "id,caption,media_type,media_url,permalink,timestamp,thumbnail_url,like_count,comments_count";
 const defaultRevalidateSeconds = 900;
+const fetchTimeoutMs = 10_000; // 10 segundos
+
+/** Crea una señal de abort con timeout para evitar que los fetches cuelguen indefinidamente. */
+async function fetchWithTimeout(url: string, init?: RequestInit) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), fetchTimeoutMs);
+  return fetch(url, { ...init, signal: controller.signal }).finally(() =>
+    clearTimeout(timer)
+  );
+}
+
+/**
+ * Sanitiza mensajes de error antes de exponerlos.
+ * Las respuestas crudas de la Graph API pueden incluir info del token en el mensaje de error.
+ */
+function sanitizeGraphError(error: unknown, context: string): string {
+  if (error instanceof Error && error.name === "AbortError") {
+    return `Timeout al conectar con Instagram (${context}).`;
+  }
+  // No exponer el mensaje raw de la API: puede incluir fragmentos del access_token
+  return `Error al obtener datos de Instagram (${context}).`;
+}
 
 function getInstagramSourceEnvs(): InstagramSourceEnv[] {
   return [
@@ -114,24 +136,30 @@ function getInstagramSourceEnvs(): InstagramSourceEnv[] {
 
 async function fetchGraph<T>(accessToken: string, path: string, params: Record<string, string> = {}) {
   const search = new URLSearchParams({ access_token: accessToken, ...params });
-  const response = await fetch(`${graphBaseUrl}/${path}?${search.toString()}`, {
+  const response = await fetchWithTimeout(`${graphBaseUrl}/${path}?${search.toString()}`, {
     next: { revalidate: defaultRevalidateSeconds },
-  });
+  } as RequestInit);
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || `Instagram Graph error on ${path}`);
+    // No leer ni exponer el body del error (puede contener info del token)
+    throw new Error(`Instagram Graph API error (HTTP ${response.status})`);
   }
 
   return (await response.json()) as T;
 }
 
 async function fetchMediaPage(url: string) {
-  const response = await fetch(url, { next: { revalidate: defaultRevalidateSeconds } });
+  // Validar que la URL de paginación sea del dominio esperado (evitar SSRF)
+  if (!url.startsWith("https://graph.facebook.com/")) {
+    throw new Error("URL de paginación inválida.");
+  }
+
+  const response = await fetchWithTimeout(url, {
+    next: { revalidate: defaultRevalidateSeconds },
+  } as RequestInit);
 
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(errorText || "Instagram media paging request failed");
+    throw new Error(`Error de paginación de Instagram (HTTP ${response.status})`);
   }
 
   return (await response.json()) as InstagramMediaListResponse;
@@ -293,7 +321,7 @@ async function loadInstagramAccount(source: InstagramSourceEnv): Promise<Instagr
       averageEngagementRate: 0,
       totalRecentEngagement: 0,
       lastSync,
-      error: error instanceof Error ? error.message : `Unknown Instagram error for ${source.label}`,
+      error: sanitizeGraphError(error, source.label),
     };
   }
 }

@@ -60,7 +60,7 @@ function SidebarContent({
   const text = copy[language];
 
   return (
-    <>
+    <div className="flex h-full flex-col">
       <div className="mb-8 flex items-center gap-3 px-2">
         <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/20 text-primary">
           <Feather className="h-5 w-5" />
@@ -71,7 +71,7 @@ function SidebarContent({
         </div>
       </div>
 
-      <nav className="flex flex-1 flex-col gap-2">
+      <nav className="flex flex-1 flex-col gap-2 min-h-0 overflow-y-auto">
         {navigationItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
@@ -96,39 +96,48 @@ function SidebarContent({
         })}
       </nav>
 
-      <div className="space-y-4">
+      <div className="space-y-3 pt-4">
         <div className="rounded-3xl border border-border/80 bg-secondary/50 p-4">
-          <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+          <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60">
             {text.footerTag}
           </p>
-          <p className="mt-2 text-sm text-foreground">{text.footerText}</p>
+          <p className="mt-1.5 text-xs leading-5 text-muted-foreground/70">{text.footerText}</p>
         </div>
 
-        <div className="rounded-3xl border border-border/80 bg-background/50 p-4">
-          <p className="text-xs uppercase tracking-[0.22em] text-muted-foreground">
+        {/* Toggle de idioma — pill compacto siempre visible */}
+        <div className="flex items-center justify-between px-1 pb-1">
+          <span className="text-[10px] uppercase tracking-widest text-muted-foreground/50">
             {text.languageLabel}
-          </p>
-          <div className="mt-3 grid grid-cols-2 gap-2">
-            <Button
+          </span>
+          <div className="flex rounded-xl border border-border/50 bg-background/30 p-0.5">
+            <button
               type="button"
-              variant={language === "en" ? "default" : "outline"}
-              className="w-full"
               onClick={() => setLanguage("en")}
+              className={cn(
+                "rounded-[10px] px-3 py-1 text-xs font-medium transition-colors",
+                language === "en"
+                  ? "bg-secondary text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
             >
-              {text.english}
-            </Button>
-            <Button
+              EN
+            </button>
+            <button
               type="button"
-              variant={language === "es" ? "default" : "outline"}
-              className="w-full"
               onClick={() => setLanguage("es")}
+              className={cn(
+                "rounded-[10px] px-3 py-1 text-xs font-medium transition-colors",
+                language === "es"
+                  ? "bg-secondary text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
             >
-              {text.spanish}
-            </Button>
+              ES
+            </button>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -222,7 +231,7 @@ export function AppSidebar() {
         </div>
       ) : null}
 
-      <aside className="hidden min-h-screen w-full max-w-72 flex-col border-r border-border/80 bg-slate-950/70 px-4 py-6 backdrop-blur-xl lg:flex">
+      <aside className="hidden h-screen sticky top-0 w-full max-w-72 flex-col border-r border-border/80 bg-slate-950/70 px-4 py-6 backdrop-blur-xl lg:flex">
         <SidebarContent pathname={pathname} language={language} setLanguage={setLanguage} />
       </aside>
     </>
