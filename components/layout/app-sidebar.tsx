@@ -72,7 +72,7 @@ function SidebarContent({
       </div>
 
       <nav className="flex flex-1 flex-col gap-2 min-h-0 overflow-y-auto">
-        {navigationItems.map((item) => {
+        {navigationItems.map((item, index) => {
           const Icon = item.icon;
           const isActive = pathname === item.href;
 
@@ -82,10 +82,11 @@ function SidebarContent({
               asChild
               variant="ghost"
               className={cn(
-                "h-12 justify-start rounded-2xl px-4 text-sm text-muted-foreground hover:bg-secondary/80 hover:text-foreground",
+                "h-12 justify-start rounded-2xl px-4 text-sm text-muted-foreground hover:bg-secondary/80 hover:text-foreground animate-slide-in-left",
                 isActive &&
                   "bg-secondary text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
               )}
+              style={{ animationDelay: `${index * 55}ms` }}
             >
               <Link href={item.href} onClick={onNavigate}>
                 <Icon className="h-4 w-4" />
@@ -231,7 +232,7 @@ export function AppSidebar() {
         </div>
       ) : null}
 
-      <aside className="hidden h-screen sticky top-0 w-full max-w-72 flex-col border-r border-border/80 bg-slate-950/70 px-4 py-6 backdrop-blur-xl lg:flex">
+      <aside className="hidden h-screen sticky top-0 w-full max-w-72 flex-col border-r border-border/80 bg-slate-950/70 px-4 py-6 backdrop-blur-xl lg:flex animate-slide-in-left">
         <SidebarContent pathname={pathname} language={language} setLanguage={setLanguage} />
       </aside>
     </>
